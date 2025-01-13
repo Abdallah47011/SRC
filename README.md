@@ -1,2 +1,2 @@
 # SRC
-Studie retnings case
+Studieretningscase
