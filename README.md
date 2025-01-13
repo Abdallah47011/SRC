@@ -3,4 +3,4 @@ Studieretningscase
 
 Hello World!
 
-NGA
+NINJA
