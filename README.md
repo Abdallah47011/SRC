@@ -4,5 +4,3 @@ Studieretningscase
 Hello World!
 
 G
-
-Skibidi
