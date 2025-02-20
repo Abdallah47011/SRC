@@ -3,9 +3,9 @@ let P1 = {x: 300, y: 100, dx: 0, dy: 0};
 let P2 = {x: 500, y: 100, dx: 0, dy: 0};
 let P3 = {x: 700, y: 300, dx: 0, dy: 0};
 let bezierPoints = [P0, P1, P2, P3];
-let bilT = 0;
-let bilHastighed = 0.002;
-let kør = false;
+let cursorT = 0;
+let cursorHastighed = 0.002;
+let tegnCursor = false;
 
 function setup() {
   createCanvas(800, 600);
@@ -15,9 +15,9 @@ function setup() {
 function draw() {
   background(50);
   tegnHjælpelinjer();
-  tegnBane();
+  tegnKurve();
   tegnPunkter();
-  bevægBil();
+  tegnCursorPunkt();
 }
 
 function calcBezier(t) {
@@ -40,7 +40,7 @@ function tegnHjælpelinjer() {
   }
 }
 
-function tegnBane() {
+function tegnKurve() {
   stroke(255, 204, 0);
   strokeWeight(3);
   noFill();
@@ -52,14 +52,14 @@ function tegnBane() {
   endShape();
 }
 
-function bevægBil() {
-  if (!kør) return;
-  let p = calcBezier(bilT);
+function tegnCursorPunkt() {
+  if (!tegnCursor) return;
+  let p = calcBezier(cursorT);
   fill(0, 255, 0);
   noStroke();
   ellipse(p.x, p.y, 15);
-  bilT += bilHastighed;
-  if (bilT >= 1) bilT = 0;
+  cursorT += cursorHastighed;
+  if (cursorT >= 1) cursorT = 0;
 }
 
 function tegnPunkter() {
@@ -93,13 +93,13 @@ function mouseReleased() {
 function createUI() {
   let start = createButton('Start');
   start.position(20, 20);
-  start.mousePressed(() => kør = true);
+  start.mousePressed(() => tegnCursor = true);
   
   let stop = createButton('Stop');
   stop.position(80, 20);
-  stop.mousePressed(() => { kør = false; bilT = 0; });
+  stop.mousePressed(() => { tegnCursor = false; cursorT = 0; });
   
   let speedSlider = createSlider(0.001, 0.01, 0.002, 0.001);
   speedSlider.position(20, 50);
-  speedSlider.input(() => bilHastighed = speedSlider.value());
+  speedSlider.input(() => cursorHastighed = speedSlider.value());
 }
