@@ -1,89 +1,105 @@
-let P0 = {x: 50, y: 350, relativX: undefined, relativY: undefined};
-let P1 = {x: 100, y: 50, relativX: undefined, relativY: undefined};
-let P2 = {x: 300, y: 50, relativX: undefined, relativY: undefined};
-let P3 = {x: 350, y: 350, relativX: undefined, relativY: undefined};
-let A = {x: undefined, y: undefined};
-let B = {x: undefined, y: undefined};
-let C = {x: undefined, y: undefined};
-let D = {x: undefined, y: undefined};
-let E = {x: undefined, y: undefined};
-let P = {x: undefined, y: undefined};
-let t=0
-let pd=20
-
-let bezierPoints = [P0,P1,P2,P3]
+let P0 = {x: 100, y: 300, dx: 0, dy: 0};
+let P1 = {x: 300, y: 100, dx: 0, dy: 0};
+let P2 = {x: 500, y: 100, dx: 0, dy: 0};
+let P3 = {x: 700, y: 300, dx: 0, dy: 0};
+let bezierPoints = [P0, P1, P2, P3];
+let bilT = 0;
+let bilHastighed = 0.002;
+let kør = false;
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(800, 600);
+  createUI();
 }
 
 function draw() {
-  background(220);
-  movePoint()
-  for(let t=0; t<1; t+=0.001){
-    calcBezier(t);
-    drawBezier();
+  background(50);
+  tegnHjælpelinjer();
+  tegnBane();
+  tegnPunkter();
+  bevægBil();
+}
+
+function calcBezier(t) {
+  let A = lerpPoint(P0, P1, t);
+  let B = lerpPoint(P1, P2, t);
+  let C = lerpPoint(P2, P3, t);
+  let D = lerpPoint(A, B, t);
+  let E = lerpPoint(B, C, t);
+  return lerpPoint(D, E, t);
+}
+
+function lerpPoint(p1, p2, t) {
+  return { x: lerp(p1.x, p2.x, t), y: lerp(p1.y, p2.y, t) };
+}
+
+function tegnHjælpelinjer() {
+  stroke(100);
+  for (let i = 0; i < bezierPoints.length - 1; i++) {
+    line(bezierPoints[i].x, bezierPoints[i].y, bezierPoints[i + 1].x, bezierPoints[i + 1].y);
   }
-  drawPoints()
-  supportLines()
-  text("Click & drag the points to change the bézier curve",50,375)
 }
 
-function calcBezier(t){
-  A.x=lerp(P0.x,P1.x,t)
-  A.y=lerp(P0.y,P1.y,t)
-  B.x=lerp(P1.x,P2.x,t)
-  B.y=lerp(P1.y,P2.y,t)
-  C.x=lerp(P2.x,P3.x,t)
-  C.y=lerp(P2.y,P3.y,t)
-  D.x=lerp(A.x,B.x,t)
-  D.y=lerp(A.y,B.y,t)
-  E.x=lerp(B.x,C.x,t)
-  E.y=lerp(B.y,C.y,t)
-  P.x=lerp(D.x,E.x,t)
-  P.y=lerp(D.y,E.y,t)
+function tegnBane() {
+  stroke(255, 204, 0);
+  strokeWeight(3);
+  noFill();
+  beginShape();
+  for (let t = 0; t <= 1; t += 0.005) {
+    let p = calcBezier(t);
+    vertex(p.x, p.y);
+  }
+  endShape();
 }
 
-function supportLines(){
-  line(P0.x,P0.y,P1.x,P1.y);
-  line(P1.x,P1.y,P2.x,P2.y);
-  line(P2.x,P2.y,P3.x,P3.y);
+function bevægBil() {
+  if (!kør) return;
+  let p = calcBezier(bilT);
+  fill(0, 255, 0);
+  noStroke();
+  ellipse(p.x, p.y, 15);
+  bilT += bilHastighed;
+  if (bilT >= 1) bilT = 0;
 }
 
-function drawBezier(){
-  circle(P.x,P.y,15);
+function tegnPunkter() {
+  fill(255, 0, 0);
+  stroke(255);
+  bezierPoints.forEach(p => ellipse(p.x, p.y, 15));
 }
 
-function drawPoints(){
-  circle(P0.x,P0.y,pd);
-  circle(P1.x,P1.y,pd);
-  circle(P2.x,P2.y,pd);
-  circle(P3.x,P3.y,pd);
-}
-
-function movePoint(){
-  for(let i=0; i<bezierPoints.length;i++){
-    if(bezierPoints[i].relativX!=undefined){
-      bezierPoints[i].x=mouseX+bezierPoints[i].relativX
-      bezierPoints[i].y=mouseY+bezierPoints[i].relativY
+function mousePressed() {
+  bezierPoints.forEach(p => {
+    if (dist(mouseX, mouseY, p.x, p.y) < 10) {
+      p.dx = p.x - mouseX;
+      p.dy = p.y - mouseY;
     }
-  } 
+  });
 }
 
-function mousePressed(){
-  for(let i=0; i<bezierPoints.length;i++){
-    if(dist(bezierPoints[i].x,bezierPoints[i].y,mouseX,mouseY)<pd/2){
-      bezierPoints[i].relativX=bezierPoints[i].x-mouseX
-      bezierPoints[i].relativY=bezierPoints[i].y-mouseY
+function mouseDragged() {
+  bezierPoints.forEach(p => {
+    if (p.dx !== 0 || p.dy !== 0) {
+      p.x = mouseX + p.dx;
+      p.y = mouseY + p.dy;
     }
-  } 
+  });
 }
 
-function mouseReleased(){
-  for(let i=0; i<bezierPoints.length;i++){
-    bezierPoints[i].relativX=undefined
-    bezierPoints[i].relativY=undefined
-  } 
+function mouseReleased() {
+  bezierPoints.forEach(p => { p.dx = 0; p.dy = 0; });
 }
 
-let k=0;
+function createUI() {
+  let start = createButton('Start');
+  start.position(20, 20);
+  start.mousePressed(() => kør = true);
+  
+  let stop = createButton('Stop');
+  stop.position(80, 20);
+  stop.mousePressed(() => { kør = false; bilT = 0; });
+  
+  let speedSlider = createSlider(0.001, 0.01, 0.002, 0.001);
+  speedSlider.position(20, 50);
+  speedSlider.input(() => bilHastighed = speedSlider.value());
+}
